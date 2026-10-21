@@ -54,7 +54,7 @@
     <input id="pin" type="password" placeholder="Senha do gestor">
     <button class="btn-prim" id="btnEntrar" onclick="entrar()">Entrar</button>
   </div>
-  <div class="msg erro" id="msgLogin"></div>
+  <div class="msg" id="msgLogin"></div>
 
   <div id="telaPainel" class="hidden">
     <div class="topo">
@@ -154,6 +154,7 @@ function hojeISO() {
 }
 
 function abrirPainel() {
+  if (!document.getElementById('nomeGestor').textContent) document.getElementById('nomeGestor').textContent = 'Gestor';
   document.getElementById('telaLogin').classList.add('hidden');
   document.getElementById('telaPainel').classList.remove('hidden');
   document.getElementById('data').value = hojeISO();
