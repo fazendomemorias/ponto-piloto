@@ -361,3 +361,4 @@ insert into ponto_funcionarios (nome, matricula, pin) values
   ('Diego Simulado', 'FIC-004', 'SUBSTITUA-PIN-4A6-DIGITOS'),
   ('Elisa Ficticia', 'FIC-005', 'SUBSTITUA-PIN-4A6-DIGITOS')
 on conflict (matricula) do nothing;
+ 
