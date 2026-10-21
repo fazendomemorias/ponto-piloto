@@ -50,8 +50,8 @@
   <div class="sub">Ponto interno pelo celular</div>
 
   <div id="telaLogin" class="card">
-    <label for="pin">PIN do gestor</label>
-    <input id="pin" type="password" inputmode="numeric" placeholder="PIN">
+    <label for="pin">Senha do gestor</label>
+    <input id="pin" type="password" placeholder="Senha do gestor">
     <button class="btn-prim" id="btnEntrar" onclick="entrar()">Entrar</button>
   </div>
   <div class="msg erro" id="msgLogin"></div>
@@ -92,6 +92,21 @@
       <input id="novoPin" type="text" inputmode="numeric" placeholder="PIN de 4 a 6 numeros">
       <button class="btn-sec" onclick="addFunc()">Adicionar</button>
     </div>
+
+    <div class="card">
+      <label>Minha senha de gestor</label>
+      <input id="senhaNova" type="password" placeholder="Nova senha (min. 12 caracteres)">
+      <input id="senhaNova2" type="password" placeholder="Repita a nova senha">
+      <button class="btn-sec" onclick="trocarSenha()">Alterar minha senha</button>
+      <div class="nota">Depois de alterar, o painel ja passa a usar a nova senha nesta sessao.</div>
+    </div>
+
+    <div class="card">
+      <label>Redefinir PIN de funcionario</label>
+      <input id="pinFuncMat" type="text" placeholder="Matricula (ex.: FIC-001)" autocapitalize="characters">
+      <input id="pinFuncNovo" type="text" inputmode="numeric" placeholder="Novo PIN de 4 a 6 numeros">
+      <button class="btn-sec" onclick="redefinirPin()">Redefinir PIN</button>
+    </div>
   </div>
 
   <div class="nota">Este piloto nao substitui o ponto oficial.</div>
@@ -111,13 +126,14 @@ async function rpc(fn, params) {
   return r.json();
 }
 function pin() { return sessionStorage.getItem('ponto_admin_pin'); }
-function mostraMsg(el, texto, cls) { el.className = 'msg ' + cls; el.innerHTML = texto; }
+function mostraMsg(el, texto, cls) { el.className = 'msg ' + cls; el.textContent = texto; }
+function esc(v) { return String(v == null ? '' : v).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
 
 async function entrar() {
   const p = document.getElementById('pin').value.trim();
   const msgL = document.getElementById('msgLogin');
   msgL.className = 'msg'; msgL.innerHTML = '';
-  if (!p) { mostraMsg(msgL, 'Informe o PIN.', 'erro'); return; }
+  if (!p) { mostraMsg(msgL, 'Informe a senha.', 'erro'); return; }
   const btn = document.getElementById('btnEntrar'); btn.disabled = true;
   try {
     const res = await rpc('ponto_admin_login', { p_pin: p });
@@ -152,7 +168,7 @@ async function carregarCerca() {
     const res = await rpc('ponto_admin_config', { p_pin: pin() });
     if (!res.ok) { el.textContent = res.erro; return; }
     if (res.configurada) {
-      el.innerHTML = '<b>' + (res.rotulo || 'Local de trabalho') + '</b><br>Centro: ' +
+      el.innerHTML = '<b>' + esc(res.rotulo || 'Local de trabalho') + '</b><br>Centro: ' +
         Number(res.centro_lat).toFixed(6) + ', ' + Number(res.centro_lon).toFixed(6) +
         ' - raio ' + res.raio_m + 'm';
       document.getElementById('raio').value = res.raio_m;
@@ -213,8 +229,8 @@ async function carregarPainel() {
               (m.precisao_m > 50 ? ', GPS fraco ~' + m.precisao_m + 'm' : '') + ')</span></div>';
           }).join('')
         : '<div style="color:#9ca3af;">sem marcacao</div>';
-      return '<div class="func"><div class="cab"><span class="nm">' + f.nome +
-        ' <span style="color:#9ca3af;font-weight:400;font-size:12px;">' + f.matricula + '</span></span>' +
+      return '<div class="func"><div class="cab"><span class="nm">' + esc(f.nome) +
+        ' <span style="color:#9ca3af;font-weight:400;font-size:12px;">' + esc(f.matricula) + '</span></span>' +
         '<span class="tag ' + (f.presente ? 'pres' : 'aus') + '">' + (f.presente ? 'PRESENTE' : 'ausente') + '</span></div>' +
         '<div class="marcas">' + marcas + '</div></div>';
     }).join('');
@@ -239,6 +255,40 @@ async function addFunc() {
       document.getElementById('novoPin').value = '';
       carregarPainel();
     } else mostraMsg(msg, res.erro || 'Nao foi possivel adicionar.', 'erro');
+  } catch(e) { mostraMsg(msg, 'Sem conexao.', 'erro'); }
+}
+
+
+async function trocarSenha() {
+  const msg = document.getElementById('msg');
+  const s1 = document.getElementById('senhaNova').value;
+  const s2 = document.getElementById('senhaNova2').value;
+  if (s1.length < 12) { mostraMsg(msg, 'A nova senha precisa de pelo menos 12 caracteres.', 'erro'); return; }
+  if (s1 !== s2) { mostraMsg(msg, 'As senhas nao conferem.', 'erro'); return; }
+  try {
+    const res = await rpc('ponto_admin_trocar_senha', { p_pin_atual: pin(), p_senha_nova: s1 });
+    if (res.ok) {
+      sessionStorage.setItem('ponto_admin_pin', s1);
+      document.getElementById('senhaNova').value = '';
+      document.getElementById('senhaNova2').value = '';
+      mostraMsg(msg, 'Senha do gestor alterada.', 'ok');
+    } else mostraMsg(msg, res.erro || 'Nao foi possivel alterar.', 'erro');
+  } catch(e) { mostraMsg(msg, 'Sem conexao.', 'erro'); }
+}
+
+async function redefinirPin() {
+  const msg = document.getElementById('msg');
+  const mat = document.getElementById('pinFuncMat').value.trim().toUpperCase();
+  const novo = document.getElementById('pinFuncNovo').value.trim();
+  if (!mat) { mostraMsg(msg, 'Informe a matricula.', 'erro'); return; }
+  if (!/^\d{4,6}$/.test(novo)) { mostraMsg(msg, 'PIN do funcionario: 4 a 6 numeros.', 'erro'); return; }
+  try {
+    const res = await rpc('ponto_admin_set_pin_func', { p_pin: pin(), p_matricula: mat, p_pin_novo: novo });
+    if (res.ok) {
+      document.getElementById('pinFuncMat').value = '';
+      document.getElementById('pinFuncNovo').value = '';
+      mostraMsg(msg, 'PIN de ' + mat + ' redefinido.', 'ok');
+    } else mostraMsg(msg, res.erro || 'Nao foi possivel redefinir.', 'erro');
   } catch(e) { mostraMsg(msg, 'Sem conexao.', 'erro'); }
 }
 
