@@ -209,12 +209,8 @@ async function definirCerca() {
     if (res.ok) { mostraMsg(msg, 'Local de trabalho definido (precisao do GPS: ~' + Math.round(pos.coords.accuracy||0) + 'm).', 'ok'); carregarCerca(); }
     else mostraMsg(msg, res.erro || 'Nao foi possivel salvar.', 'erro');
   } catch(e) {
-    if (navigator.onLine === false) {
-      mostraMsg(msg, 'Sem conexao com a internet. Nada foi enviado.', 'erro');
-    } else {
-      mostraMsg(msg, 'Nao foi possivel confirmar o salvamento. Recarregue o painel e confira o local atual antes de salvar de novo.', 'erro');
-      carregarCerca();
-    }
+    mostraMsg(msg, 'Nao foi possivel confirmar o salvamento. Recarregue o painel e confira o local atual antes de salvar de novo.', 'erro');
+    carregarCerca();
   }
   btn.disabled = false; btn.textContent = 'Usar MINHA localizacao atual como centro';
 }
