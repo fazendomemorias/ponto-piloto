@@ -91,7 +91,8 @@ async function rpc(fn, params) {
 
 function sess() { try { return JSON.parse(sessionStorage.getItem('ponto_sess')); } catch(e){ return null; } }
 function setSess(s) { sessionStorage.setItem('ponto_sess', JSON.stringify(s)); }
-function mostraMsg(el, texto, cls) { el.className = 'msg ' + cls; el.innerHTML = texto; }
+function mostraMsg(el, texto, cls) { el.className = 'msg ' + cls; el.textContent = texto; }
+function esc(v) { return String(v == null ? '' : v).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
 
 async function entrar() {
   const mat = document.getElementById('mat').value.trim();
