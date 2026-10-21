@@ -95,10 +95,10 @@
 
     <div class="card">
       <label>Minha senha de gestor</label>
-      <input id="senhaNova" type="password" placeholder="Nova senha (min. 12 caracteres)">
+      <input id="senhaNova" type="password" placeholder="Nova senha (4 a 64 caracteres)">
       <input id="senhaNova2" type="password" placeholder="Repita a nova senha">
       <button class="btn-sec" onclick="trocarSenha()">Alterar minha senha</button>
-      <div class="nota">Depois de alterar, o painel ja passa a usar a nova senha nesta sessao.</div>
+      <div class="nota">Depois de alterar, o painel ja passa a usar a nova senha nesta sessao. No piloto ficticio vale senha simples; em uso real, use senha forte (12 ou mais caracteres).</div>
     </div>
 
     <div class="card">
@@ -266,7 +266,7 @@ async function trocarSenha() {
   const msg = document.getElementById('msg');
   const s1 = document.getElementById('senhaNova').value;
   const s2 = document.getElementById('senhaNova2').value;
-  if (s1.length < 12) { mostraMsg(msg, 'A nova senha precisa de pelo menos 12 caracteres.', 'erro'); return; }
+  if (s1.length < 4 || s1.length > 64) { mostraMsg(msg, 'A nova senha precisa de 4 a 64 caracteres.', 'erro'); return; }
   if (s1 !== s2) { mostraMsg(msg, 'As senhas nao conferem.', 'erro'); return; }
   try {
     const res = await rpc('ponto_admin_trocar_senha', { p_pin_atual: pin(), p_senha_nova: s1 });
