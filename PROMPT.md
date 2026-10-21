@@ -25,9 +25,13 @@ Dados 100% ficticios durante o piloto.
   ou escrita direta; tudo passa pelas funcoes RPC.
 - Funcoes internas (throttle e distancia) SEM permissao de execucao
   externa: chamada direta retorna "permission denied" (testado).
-- Somente o papel `anon` executa as RPCs de entrada; usuarios
-  autenticados do sistema escolar NAO executam nada do ponto (revogado
-  e auditado via information_schema.routine_privileges).
+- As RPCs de entrada so aceitam o papel `anon`; tokens autenticados
+  do sistema escolar sao recusados (revogado e auditado via
+  information_schema.routine_privileges). Isso NAO impede uma pessoa
+  de usar a chave publica anon diretamente: a protecao real dos dados
+  do ponto e que toda RPC exige a credencial propria (senha do gestor
+  ou PIN do funcionario), validada dentro da funcao, com RLS barrando
+  qualquer leitura ou escrita direta nas tabelas.
 - Bloqueio por tentativas: 5 erros em 10 minutos por matricula/gestor.
 - Validacao no servidor: coordenadas obrigatorias, finitas e dentro da
   faixa (lat -90..90, lon -180..180) tanto no registro quanto na cerca.
@@ -48,7 +52,9 @@ Dados 100% ficticios durante o piloto.
 - GPS de celular pode ser falsificado com apps de "fake GPS". O piloto
   nao detecta isso; serve para controle interno com confianca, nao para
   prova juridica.
-- Precisao do GPS varia (5-50m); por isso o raio minimo e 30m.
+- A precisao do GPS do celular varia bastante conforme o ambiente
+  (ceu aberto, predios, modelo do aparelho); por isso o raio minimo
+  e 30m e marcacoes com precisao ruim sao sinalizadas.
 - Nao ha relatorios/exportacao (espelho de ponto) no piloto.
 - A cerca real so sera definida com o gestor NO local de trabalho;
   enquanto isso ninguem registra (comportamento verificado).
@@ -58,11 +64,11 @@ Dados 100% ficticios durante o piloto.
 
 ## Como subir do zero (pacote executavel)
 
-1. Crie um projeto Supabase gratuito e rode o `setup.sql` completo no
-   SQL Editor. Ele cria tabelas, RLS, funcoes, revogacoes e grants.
-2. No final do `setup.sql`, substitua os placeholders
+1. No final do `setup.sql`, ANTES de rodar, substitua os placeholders
    `SUBSTITUA-POR-SENHA-FORTE-MIN-12` e `SUBSTITUA-PIN-4A6-DIGITOS`
    localmente (nunca commite valores).
+2. Crie um projeto Supabase gratuito e rode o `setup.sql` completo no
+   SQL Editor. Ele cria tabelas, RLS, funcoes, revogacoes e grants.
 3. Publique `index.html` e `admin.html` em qualquer hosting estatico
    (GitHub Pages, etc.) ajustando SUPABASE_URL/SUPABASE_KEY (a chave
    publishable e publica por desenho - a seguranca esta nas RPCs).
@@ -115,12 +121,17 @@ servidor proprio. Requisitos:
    chave publishable do Supabase embutida (publica por desenho; a
    seguranca esta nas RPCs). Renderize qualquer texto vindo de usuario
    com textContent ou escape; mensagens de falha de rede devem dizer
-   "nao foi possivel confirmar, confira o historico" em vez de afirmar
-   que nada foi gravado, pois a conexao pode cair apos o commit.
+   "nao foi possivel confirmar, confira o historico/a configuracao" em
+   vez de afirmar que nada foi gravado, pois a conexao pode cair apos o
+   commit (navigator.onLine nao prova que o envio nao saiu).
 
 8. CONVIVENDO COM OUTRO SISTEMA no mesmo projeto Supabase: prefixo
-   ponto_ + RLS sem policies + grants so para anon garantem isolamento;
-   verifique com chamadas anonimas e com a auditoria de
+   ponto_ + RLS sem policies fazem das RPCs a unica porta de acesso.
+   Restringir grants ao papel anon impede que tokens autenticados do
+   outro sistema chamem as funcoes - mas a chave anon e publica por
+   desenho, entao a protecao real vem das credenciais proprias
+   (PIN/senha) exigidas dentro de cada RPC, mais o bloqueio por
+   tentativas. Verifique com chamadas anonimas e com a auditoria de
    information_schema.routine_privileges.
 
 9. DADOS FICTICIOS: crie funcionarios FIC-001... e um gestor com senha
