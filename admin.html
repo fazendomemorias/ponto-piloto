@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Painel do Gestor - Ponto Interno (Piloto)</title>
+<style>
+  :root { --azul:#1d4ed8; --verde:#1a7a4a; --verde-claro:#e8f5ee; --vermelho:#c0392b; --cinza:#6b7280; --borda:#e5e7eb; }
+  * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI',system-ui,sans-serif; }
+  body { background:#f3f4f6; min-height:100vh; display:flex; flex-direction:column; align-items:center; }
+  .wrap { width:100%; max-width:520px; padding:16px; }
+  .badge-piloto { background:#fef3c7; color:#92400e; font-size:11px; font-weight:700; text-align:center;
+    padding:4px 8px; border-radius:6px; margin-bottom:10px; letter-spacing:.4px; }
+  h1 { font-size:20px; color:#111827; text-align:center; }
+  .sub { font-size:12px; color:var(--cinza); text-align:center; margin:4px 0 16px; }
+  .card { background:#fff; border:1px solid var(--borda); border-radius:12px; padding:16px; margin-bottom:14px; }
+  label { font-size:13px; font-weight:600; color:#374151; display:block; margin-bottom:4px; }
+  input { width:100%; padding:12px; border:1px solid var(--borda); border-radius:8px; font-size:16px; margin-bottom:12px; }
+  button { width:100%; padding:12px; border:none; border-radius:10px; font-size:15px; font-weight:700; cursor:pointer; }
+  .btn-prim { background:var(--azul); color:#fff; }
+  .btn-prim:disabled { background:#9ca3af; }
+  .btn-sec { background:#eef2ff; color:var(--azul); margin-top:6px; }
+  .btn-sair { background:transparent; color:var(--cinza); font-size:13px; padding:8px; width:auto; }
+  .msg { border-radius:10px; padding:12px; font-size:14px; margin-bottom:12px; display:none; }
+  .msg.ok { display:block; background:var(--verde-claro); color:var(--verde); border:1px solid #a7d7bd; }
+  .msg.erro { display:block; background:#fdecea; color:var(--vermelho); border:1px solid #f5b7b1; }
+  .func { border:1px solid var(--borda); border-radius:10px; padding:10px 12px; margin-bottom:10px; }
+  .func .cab { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px; }
+  .func .nm { font-weight:700; font-size:14px; }
+  .func .marcas { font-size:13px; color:#374151; margin-top:6px; }
+  .tag { font-size:11px; font-weight:700; padding:2px 8px; border-radius:20px; white-space:nowrap; }
+  .tag.pres { background:var(--verde-claro); color:var(--verde); }
+  .tag.aus { background:#f3f4f6; color:var(--cinza); }
+  .tag.e { background:var(--verde-claro); color:var(--verde); }
+  .tag.s { background:#fff7ed; color:#c2410c; }
+  .resumo { display:flex; gap:10px; margin-bottom:14px; }
+  .resumo div { flex:1; background:#fff; border:1px solid var(--borda); border-radius:10px; padding:10px; text-align:center; }
+  .resumo .n { font-size:22px; font-weight:800; color:#111827; }
+  .resumo .l { font-size:11px; color:var(--cinza); }
+  .topo { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+  .nota { font-size:11px; color:var(--cinza); text-align:center; margin-top:6px; line-height:1.5; }
+  .hidden { display:none; }
+  .cerca-atual { font-size:13px; color:#374151; background:#f9fafb; border-radius:8px; padding:10px; margin-bottom:10px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="badge-piloto">PILOTO - DADOS FICTICIOS - CONTROLE INTERNO</div>
+  <h1>Painel do Gestor</h1>
+  <div class="sub">Ponto interno pelo celular</div>
+
+  <div id="telaLogin" class="card">
+    <label for="pin">PIN do gestor</label>
+    <input id="pin" type="password" inputmode="numeric" placeholder="PIN">
+    <button class="btn-prim" id="btnEntrar" onclick="entrar()">Entrar</button>
+  </div>
+  <div class="msg erro" id="msgLogin"></div>
+
+  <div id="telaPainel" class="hidden">
+    <div class="topo">
+      <div style="font-weight:700;" id="nomeGestor"></div>
+      <button class="btn-sair" onclick="sair()">Sair</button>
+    </div>
+    <div id="msg" class="msg"></div>
+
+    <div class="card">
+      <label>Local de trabalho autorizado (cerca virtual)</label>
+      <div class="cerca-atual" id="cercaAtual">Carregando...</div>
+      <label for="raio">Raio permitido (metros)</label>
+      <input id="raio" type="number" min="30" max="2000" value="100">
+      <label for="rotulo">Nome do local</label>
+      <input id="rotulo" type="text" maxlength="120" placeholder="Ex.: Secretaria de Saude (piloto)">
+      <button class="btn-prim" id="btnCerca" onclick="definirCerca()">Usar MINHA localizacao atual como centro</button>
+      <div class="nota">Faca isso estando no local de trabalho. So depois disso os funcionarios conseguem registrar.</div>
+    </div>
+
+    <div class="card">
+      <label>Data</label>
+      <input id="data" type="date">
+      <div class="resumo">
+        <div><div class="n" id="nPres">0</div><div class="l">presentes</div></div>
+        <div><div class="n" id="nEnt">0</div><div class="l">entradas</div></div>
+        <div><div class="n" id="nSai">0</div><div class="l">saidas</div></div>
+      </div>
+      <div id="listaFunc"></div>
+    </div>
+
+    <div class="card">
+      <label>Adicionar funcionario (ficticio)</label>
+      <input id="novoNome" type="text" placeholder="Nome">
+      <input id="novaMat" type="text" placeholder="Matricula (ex.: FIC-006)" autocapitalize="characters">
+      <input id="novoPin" type="text" inputmode="numeric" placeholder="PIN de 4 a 6 numeros">
+      <button class="btn-sec" onclick="addFunc()">Adicionar</button>
+    </div>
+  </div>
+
+  <div class="nota">Este piloto nao substitui o ponto oficial.</div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://hxyrjkgnmcmeyevmflol.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_l8KDaRaRSU46w4yxxWF_9w_RXmoML0P';
+
+async function rpc(fn, params) {
+  const r = await fetch(SUPABASE_URL + '/rest/v1/rpc/' + fn, {
+    method: 'POST',
+    headers: { apikey: SUPABASE_KEY, 'Content-Type': 'application/json' },
+    body: JSON.stringify(params)
+  });
+  if (!r.ok) throw new Error('falha_rede');
+  return r.json();
+}
+function pin() { return sessionStorage.getItem('ponto_admin_pin'); }
+function mostraMsg(el, texto, cls) { el.className = 'msg ' + cls; el.innerHTML = texto; }
+
+async function entrar() {
+  const p = document.getElementById('pin').value.trim();
+  const msgL = document.getElementById('msgLogin');
+  msgL.className = 'msg'; msgL.innerHTML = '';
+  if (!p) { mostraMsg(msgL, 'Informe o PIN.', 'erro'); return; }
+  const btn = document.getElementById('btnEntrar'); btn.disabled = true;
+  try {
+    const res = await rpc('ponto_admin_login', { p_pin: p });
+    if (!res.ok) { mostraMsg(msgL, res.erro || 'Nao foi possivel entrar.', 'erro'); return; }
+    sessionStorage.setItem('ponto_admin_pin', p);
+    document.getElementById('nomeGestor').textContent = res.nome;
+    abrirPainel();
+  } catch(e) {
+    mostraMsg(msgL, 'Sem conexao com o servidor.', 'erro');
+  } finally { btn.disabled = false; }
+}
+
+function sair() { sessionStorage.removeItem('ponto_admin_pin'); location.reload(); }
+
+function hojeISO() {
+  const d = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+
+function abrirPainel() {
+  document.getElementById('telaLogin').classList.add('hidden');
+  document.getElementById('telaPainel').classList.remove('hidden');
+  document.getElementById('data').value = hojeISO();
+  document.getElementById('data').onchange = carregarPainel;
+  carregarCerca();
+  carregarPainel();
+}
+
+async function carregarCerca() {
+  const el = document.getElementById('cercaAtual');
+  try {
+    const res = await rpc('ponto_admin_config', { p_pin: pin() });
+    if (!res.ok) { el.textContent = res.erro; return; }
+    if (res.configurada) {
+      el.innerHTML = '<b>' + (res.rotulo || 'Local de trabalho') + '</b><br>Centro: ' +
+        Number(res.centro_lat).toFixed(6) + ', ' + Number(res.centro_lon).toFixed(6) +
+        ' - raio ' + res.raio_m + 'm';
+      document.getElementById('raio').value = res.raio_m;
+      document.getElementById('rotulo').value = res.rotulo || '';
+    } else {
+      el.textContent = 'Ainda NAO configurado. Funcionarios nao conseguem registrar ate voce definir o local aqui.';
+    }
+  } catch(e) { el.textContent = 'Sem conexao.'; }
+}
+
+function obterPosicao() {
+  return new Promise(function(resolve, reject) {
+    navigator.geolocation.getCurrentPosition(resolve, reject,
+      { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 });
+  });
+}
+
+async function definirCerca() {
+  const msg = document.getElementById('msg');
+  const btn = document.getElementById('btnCerca');
+  msg.className = 'msg'; msg.innerHTML = '';
+  const raio = parseInt(document.getElementById('raio').value, 10);
+  const rotulo = document.getElementById('rotulo').value.trim();
+  if (!raio || raio < 30 || raio > 2000) { mostraMsg(msg, 'Raio deve ficar entre 30 e 2000 metros.', 'erro'); return; }
+  btn.disabled = true; btn.textContent = 'Obtendo localizacao...';
+  let pos;
+  try { pos = await obterPosicao(); }
+  catch(e) {
+    btn.disabled = false; btn.textContent = 'Usar MINHA localizacao atual como centro';
+    mostraMsg(msg, e && e.code === 1 ? 'Permita o acesso a localizacao.' : 'Nao consegui obter a localizacao.', 'erro');
+    return;
+  }
+  try {
+    const res = await rpc('ponto_admin_set_cerca', {
+      p_pin: pin(), p_lat: pos.coords.latitude, p_lon: pos.coords.longitude,
+      p_raio: raio, p_rotulo: rotulo
+    });
+    if (res.ok) { mostraMsg(msg, 'Local de trabalho definido (precisao do GPS: ~' + Math.round(pos.coords.accuracy||0) + 'm).', 'ok'); carregarCerca(); }
+    else mostraMsg(msg, res.erro || 'Nao foi possivel salvar.', 'erro');
+  } catch(e) { mostraMsg(msg, 'Sem conexao. Nada foi salvo.', 'erro'); }
+  btn.disabled = false; btn.textContent = 'Usar MINHA localizacao atual como centro';
+}
+
+async function carregarPainel() {
+  const data = document.getElementById('data').value || hojeISO();
+  const box = document.getElementById('listaFunc');
+  try {
+    const res = await rpc('ponto_admin_painel', { p_pin: pin(), p_data: data });
+    if (!res.ok) { box.innerHTML = '<div class="nota">' + (res.erro || 'Erro') + '</div>'; return; }
+    let pres = 0, ent = 0, sai = 0;
+    const html = res.funcionarios.map(function(f) {
+      if (f.presente) pres++;
+      f.marcacoes.forEach(function(m){ if (m.modo === 'ENTRADA') ent++; else sai++; });
+      const marcas = f.marcacoes.length
+        ? f.marcacoes.map(function(m){
+            return '<div><span class="tag ' + (m.modo==='ENTRADA'?'e':'s') + '">' + m.modo + '</span> ' + m.hora +
+              ' <span style="color:#9ca3af;font-size:11px;">(' + m.distancia_m + 'm do centro' +
+              (m.precisao_m > 50 ? ', GPS fraco ~' + m.precisao_m + 'm' : '') + ')</span></div>';
+          }).join('')
+        : '<div style="color:#9ca3af;">sem marcacao</div>';
+      return '<div class="func"><div class="cab"><span class="nm">' + f.nome +
+        ' <span style="color:#9ca3af;font-weight:400;font-size:12px;">' + f.matricula + '</span></span>' +
+        '<span class="tag ' + (f.presente ? 'pres' : 'aus') + '">' + (f.presente ? 'PRESENTE' : 'ausente') + '</span></div>' +
+        '<div class="marcas">' + marcas + '</div></div>';
+    }).join('');
+    box.innerHTML = html || '<div class="nota">Nenhum funcionario.</div>';
+    document.getElementById('nPres').textContent = pres;
+    document.getElementById('nEnt').textContent = ent;
+    document.getElementById('nSai').textContent = sai;
+  } catch(e) { box.innerHTML = '<div class="nota">Sem conexao.</div>'; }
+}
+
+async function addFunc() {
+  const msg = document.getElementById('msg');
+  const nome = document.getElementById('novoNome').value.trim();
+  const mat = document.getElementById('novaMat').value.trim();
+  const p = document.getElementById('novoPin').value.trim();
+  try {
+    const res = await rpc('ponto_admin_add_func', { p_pin: pin(), p_nome: nome, p_matricula: mat, p_pin_func: p });
+    if (res.ok) {
+      mostraMsg(msg, 'Funcionario ficticio "' + nome + '" (' + mat.toUpperCase() + ') adicionado.', 'ok');
+      document.getElementById('novoNome').value = '';
+      document.getElementById('novaMat').value = '';
+      document.getElementById('novoPin').value = '';
+      carregarPainel();
+    } else mostraMsg(msg, res.erro || 'Nao foi possivel adicionar.', 'erro');
+  } catch(e) { mostraMsg(msg, 'Sem conexao.', 'erro'); }
+}
+
+if (pin()) abrirPainel();
+</script>
+</body>
+</html>
