@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Ponto Interno (Piloto)</title>
+<style>
+  :root { --verde:#1a7a4a; --verde-claro:#e8f5ee; --vermelho:#c0392b; --cinza:#6b7280; --borda:#e5e7eb; }
+  * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI',system-ui,sans-serif; }
+  body { background:#f3f4f6; min-height:100vh; display:flex; flex-direction:column; align-items:center; }
+  .wrap { width:100%; max-width:420px; padding:16px; }
+  .badge-piloto { background:#fef3c7; color:#92400e; font-size:11px; font-weight:700; text-align:center;
+    padding:4px 8px; border-radius:6px; margin-bottom:10px; letter-spacing:.4px; }
+  h1 { font-size:20px; color:#111827; text-align:center; }
+  .sub { font-size:12px; color:var(--cinza); text-align:center; margin:4px 0 16px; }
+  .card { background:#fff; border:1px solid var(--borda); border-radius:12px; padding:16px; margin-bottom:14px; }
+  label { font-size:13px; font-weight:600; color:#374151; display:block; margin-bottom:4px; }
+  input { width:100%; padding:12px; border:1px solid var(--borda); border-radius:8px; font-size:16px; margin-bottom:12px; }
+  button { width:100%; padding:14px; border:none; border-radius:10px; font-size:16px; font-weight:700; cursor:pointer; }
+  .btn-prim { background:var(--verde); color:#fff; }
+  .btn-prim:disabled { background:#9ca3af; }
+  .btn-bater { background:var(--verde); color:#fff; font-size:20px; padding:22px; border-radius:14px; }
+  .btn-bater:disabled { background:#9ca3af; }
+  .btn-sair { background:transparent; color:var(--cinza); font-size:13px; padding:8px; width:auto; }
+  .msg { border-radius:10px; padding:12px; font-size:14px; margin-bottom:12px; display:none; }
+  .msg.ok { display:block; background:var(--verde-claro); color:var(--verde); border:1px solid #a7d7bd; }
+  .msg.erro { display:block; background:#fdecea; color:var(--vermelho); border:1px solid #f5b7b1; }
+  .msg.info { display:block; background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; }
+  .lista { list-style:none; }
+  .lista li { display:flex; justify-content:space-between; padding:9px 4px; border-bottom:1px solid var(--borda); font-size:14px; }
+  .lista li:last-child { border-bottom:none; }
+  .tag { font-size:11px; font-weight:700; padding:2px 8px; border-radius:20px; }
+  .tag.e { background:var(--verde-claro); color:var(--verde); }
+  .tag.s { background:#fff7ed; color:#c2410c; }
+  .topo-user { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+  .topo-user .nome { font-weight:700; font-size:15px; color:#111827; }
+  .nota { font-size:11px; color:var(--cinza); text-align:center; margin-top:14px; line-height:1.5; }
+  .hidden { display:none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="badge-piloto">PILOTO - DADOS FICTICIOS - CONTROLE INTERNO</div>
+  <h1>Ponto Interno</h1>
+  <div class="sub" id="subTitulo">Registro pelo celular, somente no local de trabalho</div>
+
+  <!-- TELA LOGIN -->
+  <div id="telaLogin" class="card">
+    <label for="mat">Matricula</label>
+    <input id="mat" type="text" placeholder="Ex.: FIC-001" autocomplete="off" autocapitalize="characters">
+    <label for="pin">PIN</label>
+    <input id="pin" type="password" inputmode="numeric" placeholder="4 a 6 numeros">
+    <button class="btn-prim" id="btnEntrar" onclick="entrar()">Entrar</button>
+  </div>
+
+  <!-- TELA PONTO -->
+  <div id="telaPonto" class="hidden">
+    <div class="topo-user">
+      <div class="nome" id="nomeUser"></div>
+      <button class="btn-sair" onclick="sair()">Sair</button>
+    </div>
+    <div id="msg" class="msg"></div>
+    <div class="card" style="text-align:center;">
+      <button class="btn-bater" id="btnBater" onclick="baterPonto()">BATER PONTO</button>
+      <div class="nota" id="cercaInfo" style="margin-top:10px;"></div>
+    </div>
+    <div class="card">
+      <label>Marcacoes de hoje</label>
+      <ul class="lista" id="listaHoje"><li style="color:#9ca3af;">Nenhuma ainda</li></ul>
+    </div>
+  </div>
+
+  <div class="msg erro" id="msgLogin"></div>
+  <div class="nota">A localizacao do celular e usada somente no momento da marcacao.<br>
+  O horario registrado e o do servidor. Este piloto nao substitui o ponto oficial.</div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://hxyrjkgnmcmeyevmflol.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_l8KDaRaRSU46w4yxxWF_9w_RXmoML0P';
+
+async function rpc(fn, params) {
+  const r = await fetch(SUPABASE_URL + '/rest/v1/rpc/' + fn, {
+    method: 'POST',
+    headers: { apikey: SUPABASE_KEY, 'Content-Type': 'application/json' },
+    body: JSON.stringify(params)
+  });
+  if (!r.ok) throw new Error('falha_rede');
+  return r.json();
+}
+
+function sess() { try { return JSON.parse(sessionStorage.getItem('ponto_sess')); } catch(e){ return null; } }
+function setSess(s) { sessionStorage.setItem('ponto_sess', JSON.stringify(s)); }
+function mostraMsg(el, texto, cls) { el.className = 'msg ' + cls; el.innerHTML = texto; }
+
+async function entrar() {
+  const mat = document.getElementById('mat').value.trim();
+  const pin = document.getElementById('pin').value.trim();
+  const msgL = document.getElementById('msgLogin');
+  msgL.className = 'msg'; msgL.innerHTML = '';
+  if (!mat || !pin) { mostraMsg(msgL, 'Informe matricula e PIN.', 'erro'); return; }
+  const btn = document.getElementById('btnEntrar'); btn.disabled = true; btn.textContent = 'Entrando...';
+  try {
+    const res = await rpc('ponto_login', { p_matricula: mat, p_pin: pin });
+    if (!res.ok) { mostraMsg(msgL, res.erro || 'Nao foi possivel entrar.', 'erro'); return; }
+    setSess({ mat: res.matricula, pin, nome: res.nome, cerca: res.cerca_configurada, rotulo: res.cerca_rotulo });
+    abrirTelaPonto();
+  } catch(e) {
+    mostraMsg(msgL, 'Sem conexao com o servidor. Verifique a internet.', 'erro');
+  } finally { btn.disabled = false; btn.textContent = 'Entrar'; }
+}
+
+function sair() { sessionStorage.removeItem('ponto_sess'); location.reload(); }
+
+function abrirTelaPonto() {
+  const s = sess(); if (!s) return;
+  document.getElementById('telaLogin').classList.add('hidden');
+  document.getElementById('telaPonto').classList.remove('hidden');
+  document.getElementById('nomeUser').textContent = s.nome;
+  document.getElementById('cercaInfo').textContent = s.cerca
+    ? ('Local autorizado: ' + s.rotulo)
+    : 'Local de trabalho ainda nao configurado pelo gestor.';
+  document.getElementById('btnBater').disabled = !s.cerca;
+  carregarHoje();
+}
+
+async function carregarHoje() {
+  const s = sess(); if (!s) return;
+  try {
+    const res = await rpc('ponto_status', { p_matricula: s.mat, p_pin: s.pin });
+    if (!res.ok) return;
+    const ul = document.getElementById('listaHoje');
+    if (!res.marcacoes.length) { ul.innerHTML = '<li style="color:#9ca3af;">Nenhuma ainda</li>'; return; }
+    ul.innerHTML = res.marcacoes.map(m =>
+      '<li><span><span class="tag ' + (m.modo === 'ENTRADA' ? 'e' : 's') + '">' + m.modo +
+      '</span></span><span>' + m.hora + '</span></li>').join('');
+  } catch(e) { /* silencioso */ }
+}
+
+function obterPosicao() {
+  return new Promise(function(resolve, reject) {
+    if (!navigator.geolocation) { reject(new Error('sem_gps')); return; }
+    navigator.geolocation.getCurrentPosition(resolve, reject,
+      { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 });
+  });
+}
+
+async function baterPonto() {
+  const s = sess(); if (!s) return;
+  const btn = document.getElementById('btnBater');
+  const msg = document.getElementById('msg');
+  msg.className = 'msg'; msg.innerHTML = '';
+  btn.disabled = true; btn.textContent = 'Obtendo localizacao...';
+  let pos;
+  try {
+    pos = await obterPosicao();
+  } catch(e) {
+    btn.disabled = false; btn.textContent = 'BATER PONTO';
+    if (e && e.code === 1) mostraMsg(msg, 'Permita o acesso a localizacao para registrar o ponto.', 'erro');
+    else mostraMsg(msg, 'Nao consegui obter sua localizacao. Tente em local aberto ou perto de uma janela.', 'erro');
+    return;
+  }
+  const acc = pos.coords.accuracy || 0;
+  btn.textContent = 'Registrando...';
+  try {
+    const res = await rpc('ponto_registrar', {
+      p_matricula: s.mat, p_pin: s.pin,
+      p_lat: pos.coords.latitude, p_lon: pos.coords.longitude,
+      p_accuracy: acc, p_device_ts: new Date().toISOString(),
+      p_ua: navigator.userAgent
+    });
+    if (res.ok) {
+      const hora = new Date(res.marcada_em).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+      mostraMsg(msg, '<b>' + res.modo + ' registrada as ' + hora + '</b> (horario do servidor).' +
+        (acc > 50 ? '<br>Sinal de GPS fraco (~' + Math.round(acc) + 'm), mas dentro do local autorizado.' : ''), 'ok');
+      carregarHoje();
+    } else if (res.erro === 'fora_do_local') {
+      mostraMsg(msg, '<b>Fora do local autorizado.</b> Voce esta a cerca de ' + res.distancia_m +
+        'm do local (limite: ' + res.raio_m + 'm). A marcacao NAO foi registrada.', 'erro');
+    } else {
+      mostraMsg(msg, res.erro || 'Nao foi possivel registrar.', 'erro');
+    }
+  } catch(e) {
+    mostraMsg(msg, 'Sem conexao. A marcacao NAO foi registrada. Tente novamente com internet.', 'erro');
+  } finally {
+    btn.disabled = false; btn.textContent = 'BATER PONTO';
+  }
+}
+
+if (sess()) abrirTelaPonto();
+</script>
+</body>
+</html>
