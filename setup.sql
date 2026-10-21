@@ -272,11 +272,14 @@ grant execute on function ponto_admin_set_cerca(text,float,float,int,text) to an
 grant execute on function ponto_admin_add_func(text,text,text,text) to anon;
 
 -- ------- Dados FICTICIOS do piloto -------
-insert into ponto_gestores (nome, pin) values ('Gestor Piloto', '9901');
+-- ATENCAO: NUNCA publique PINs reais aqui. Substitua os valores abaixo
+-- localmente antes de rodar, guarde as credenciais em gerenciador seguro
+-- (cofre) e nao commite os valores reais. Gestor: senha longa e aleatoria.
+insert into ponto_gestores (nome, pin) values ('Gestor Piloto', 'SUBSTITUA-POR-SENHA-FORTE');
 
 insert into ponto_funcionarios (nome, matricula, pin) values
-  ('Ana Exemplo',    'FIC-001', '1101'),
-  ('Bruno Teste',    'FIC-002', '1102'),
-  ('Carla Amostra',  'FIC-003', '1103'),
-  ('Diego Simulado', 'FIC-004', '1104'),
-  ('Elisa Ficticia', 'FIC-005', '1105');
+  ('Ana Exemplo',    'FIC-001', 'SUBSTITUA-PIN-4A6-DIGITOS'),
+  ('Bruno Teste',    'FIC-002', 'SUBSTITUA-PIN-4A6-DIGITOS'),
+  ('Carla Amostra',  'FIC-003', 'SUBSTITUA-PIN-4A6-DIGITOS'),
+  ('Diego Simulado', 'FIC-004', 'SUBSTITUA-PIN-4A6-DIGITOS'),
+  ('Elisa Ficticia', 'FIC-005', 'SUBSTITUA-PIN-4A6-DIGITOS');
