@@ -293,15 +293,17 @@ exception when unique_violation then
   return json_build_object('ok', false, 'erro', 'Matricula ja existe.');
 end $$;
 
--- Gestor troca a propria senha (minimo 12 caracteres)
+-- Gestor troca a propria senha.
+-- PILOTO FICTICIO: minimo 4 caracteres para permitir senha simples de teste.
+-- EM USO REAL: exigir senha forte (12+).
 create or replace function ponto_admin_trocar_senha(p_pin_atual text, p_senha_nova text)
 returns json language plpgsql security definer set search_path = public as $$
 begin
   if not ponto_gestor_ok(p_pin_atual) then
     return json_build_object('ok', false, 'erro', 'Senha atual invalida ou bloqueada temporariamente.');
   end if;
-  if p_senha_nova is null or length(p_senha_nova) < 12 then
-    return json_build_object('ok', false, 'erro', 'A nova senha precisa de pelo menos 12 caracteres.');
+  if p_senha_nova is null or length(p_senha_nova) < 4 or length(p_senha_nova) > 64 then
+    return json_build_object('ok', false, 'erro', 'A nova senha precisa de 4 a 64 caracteres.');
   end if;
   update ponto_gestores set pin = p_senha_nova where pin = p_pin_atual;
   return json_build_object('ok', true);
