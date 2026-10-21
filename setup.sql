@@ -303,7 +303,7 @@ begin
   if p_senha_nova is null or length(p_senha_nova) < 12 then
     return json_build_object('ok', false, 'erro', 'A nova senha precisa de pelo menos 12 caracteres.');
   end if;
-  update ponto_gestores set pin = p_senha_nova;
+  update ponto_gestores set pin = p_senha_nova where pin = p_pin_atual;
   return json_build_object('ok', true);
 end $$;
 
@@ -361,4 +361,3 @@ insert into ponto_funcionarios (nome, matricula, pin) values
   ('Diego Simulado', 'FIC-004', 'SUBSTITUA-PIN-4A6-DIGITOS'),
   ('Elisa Ficticia', 'FIC-005', 'SUBSTITUA-PIN-4A6-DIGITOS')
 on conflict (matricula) do nothing;
- 
