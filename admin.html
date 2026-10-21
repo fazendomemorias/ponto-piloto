@@ -89,7 +89,7 @@
       <label>Adicionar funcionario (ficticio)</label>
       <input id="novoNome" type="text" placeholder="Nome">
       <input id="novaMat" type="text" placeholder="Matricula (ex.: FIC-006)" autocapitalize="characters">
-      <input id="novoPin" type="text" inputmode="numeric" placeholder="PIN de 4 a 6 numeros">
+      <input id="novoPin" type="text" placeholder="Senha de 4 a 64 caracteres">
       <button class="btn-sec" onclick="addFunc()">Adicionar</button>
     </div>
 
@@ -102,10 +102,10 @@
     </div>
 
     <div class="card">
-      <label>Redefinir PIN de funcionario</label>
+      <label>Redefinir senha de funcionario</label>
       <input id="pinFuncMat" type="text" placeholder="Matricula (ex.: FIC-001)" autocapitalize="characters">
-      <input id="pinFuncNovo" type="text" inputmode="numeric" placeholder="Novo PIN de 4 a 6 numeros">
-      <button class="btn-sec" onclick="redefinirPin()">Redefinir PIN</button>
+      <input id="pinFuncNovo" type="text" placeholder="Nova senha de 4 a 64 caracteres">
+      <button class="btn-sec" onclick="redefinirPin()">Redefinir senha</button>
     </div>
   </div>
 
@@ -284,13 +284,13 @@ async function redefinirPin() {
   const mat = document.getElementById('pinFuncMat').value.trim().toUpperCase();
   const novo = document.getElementById('pinFuncNovo').value.trim();
   if (!mat) { mostraMsg(msg, 'Informe a matricula.', 'erro'); return; }
-  if (!/^\d{4,6}$/.test(novo)) { mostraMsg(msg, 'PIN do funcionario: 4 a 6 numeros.', 'erro'); return; }
+  if (novo.length < 4 || novo.length > 64) { mostraMsg(msg, 'Senha do funcionario: 4 a 64 caracteres.', 'erro'); return; }
   try {
     const res = await rpc('ponto_admin_set_pin_func', { p_pin: pin(), p_matricula: mat, p_pin_novo: novo });
     if (res.ok) {
       document.getElementById('pinFuncMat').value = '';
       document.getElementById('pinFuncNovo').value = '';
-      mostraMsg(msg, 'PIN de ' + mat + ' redefinido.', 'ok');
+      mostraMsg(msg, 'Senha de ' + mat + ' redefinida.', 'ok');
     } else mostraMsg(msg, res.erro || 'Nao foi possivel redefinir.', 'erro');
   } catch(e) { mostraMsg(msg, 'Sem conexao.', 'erro'); }
 }
