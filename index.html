@@ -182,12 +182,8 @@ async function baterPonto() {
       mostraMsg(msg, res.erro || 'Nao foi possivel registrar.', 'erro');
     }
   } catch(e) {
-    if (navigator.onLine === false) {
-      mostraMsg(msg, 'Sem conexao com a internet. Nada foi enviado.', 'erro');
-    } else {
-      mostraMsg(msg, 'Nao foi possivel confirmar a marcacao. Confira suas marcacoes do dia abaixo antes de tentar de novo, para nao duplicar.', 'erro');
-      carregarHoje();
-    }
+    mostraMsg(msg, 'Nao foi possivel confirmar a marcacao. Confira suas marcacoes do dia abaixo antes de tentar de novo, para nao duplicar.', 'erro');
+    carregarHoje();
   } finally {
     btn.disabled = false; btn.textContent = 'BATER PONTO';
   }
