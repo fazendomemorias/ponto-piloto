@@ -172,17 +172,22 @@ async function baterPonto() {
     });
     if (res.ok) {
       const hora = new Date(res.marcada_em).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-      mostraMsg(msg, '<b>' + res.modo + ' registrada as ' + hora + '</b> (horario do servidor).' +
-        (acc > 50 ? '<br>Sinal de GPS fraco (~' + Math.round(acc) + 'm), mas dentro do local autorizado.' : ''), 'ok');
+      mostraMsg(msg, res.modo + ' registrada as ' + hora + ' (horario do servidor).' +
+        (acc > 50 ? ' Sinal de GPS fraco (~' + Math.round(acc) + 'm), mas dentro do local autorizado.' : ''), 'ok');
       carregarHoje();
     } else if (res.erro === 'fora_do_local') {
-      mostraMsg(msg, '<b>Fora do local autorizado.</b> Voce esta a cerca de ' + res.distancia_m +
+      mostraMsg(msg, 'Fora do local autorizado. Voce esta a cerca de ' + res.distancia_m +
         'm do local (limite: ' + res.raio_m + 'm). A marcacao NAO foi registrada.', 'erro');
     } else {
       mostraMsg(msg, res.erro || 'Nao foi possivel registrar.', 'erro');
     }
   } catch(e) {
-    mostraMsg(msg, 'Sem conexao. A marcacao NAO foi registrada. Tente novamente com internet.', 'erro');
+    if (navigator.onLine === false) {
+      mostraMsg(msg, 'Sem conexao com a internet. Nada foi enviado.', 'erro');
+    } else {
+      mostraMsg(msg, 'Nao foi possivel confirmar a marcacao. Confira suas marcacoes do dia abaixo antes de tentar de novo, para nao duplicar.', 'erro');
+      carregarHoje();
+    }
   } finally {
     btn.disabled = false; btn.textContent = 'BATER PONTO';
   }
