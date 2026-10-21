@@ -48,8 +48,8 @@
   <div id="telaLogin" class="card">
     <label for="mat">Matricula</label>
     <input id="mat" type="text" placeholder="Ex.: FIC-001" autocomplete="off" autocapitalize="characters">
-    <label for="pin">PIN</label>
-    <input id="pin" type="password" inputmode="numeric" placeholder="4 a 6 numeros">
+    <label for="pin">Senha</label>
+    <input id="pin" type="password" placeholder="Sua senha">
     <button class="btn-prim" id="btnEntrar" onclick="entrar()">Entrar</button>
   </div>
 
@@ -99,7 +99,7 @@ async function entrar() {
   const pin = document.getElementById('pin').value.trim();
   const msgL = document.getElementById('msgLogin');
   msgL.className = 'msg'; msgL.innerHTML = '';
-  if (!mat || !pin) { mostraMsg(msgL, 'Informe matricula e PIN.', 'erro'); return; }
+  if (!mat || !pin) { mostraMsg(msgL, 'Informe matricula e senha.', 'erro'); return; }
   const btn = document.getElementById('btnEntrar'); btn.disabled = true; btn.textContent = 'Entrando...';
   try {
     const res = await rpc('ponto_login', { p_matricula: mat, p_pin: pin });
