@@ -35,8 +35,10 @@ Dados 100% ficticios durante o piloto.
 - Bloqueio por tentativas: 5 erros em 10 minutos por matricula/gestor.
 - Validacao no servidor: coordenadas obrigatorias, finitas e dentro da
   faixa (lat -90..90, lon -180..180) tanto no registro quanto na cerca.
-- Painel do gestor protegido por senha forte (minimo 12 caracteres);
-  senhas de funcionario de 4 a 64 caracteres. Nenhum valor de senha/PIN
+- Painel do gestor protegido por senha propria. EXCECAO DO PILOTO
+  FICTICIO: a senha do gestor pode ter 4 a 64 caracteres para permitir
+  teste com senha simples; EM USO REAL deve ser forte (12+). Senhas de
+  funcionario de 4 a 64 caracteres. Nenhum valor de senha/PIN
   consta em codigo, mensagens ou na VERSAO ATUAL do repositorio
   (o historico antigo do git contem PINs ja invalidados que nao abrem
   mais nada; a rotacao foi feita exatamente por isso).
@@ -107,7 +109,8 @@ servidor proprio. Requisitos:
    faixa (lat -90..90, lon -180..180) tanto no registro quanto na
    definicao da cerca. Um NULL passaria por um IF de distancia.
 
-5. GESTOR: painel com senha forte (min. 12 caracteres) mostrando
+5. GESTOR: painel com senha propria (no piloto ficticio, 4-64
+   caracteres; em uso real, forte com 12+) mostrando
    presentes/entradas/saidas por dia, definicao da cerca (centro = GPS
    atual do gestor, raio 30-2000m, rotulo), cadastro de funcionario,
    troca da propria senha e redefinicao de senha de funcionario. Updates
