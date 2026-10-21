@@ -111,7 +111,7 @@ begin
   select * into f from ponto_funcionarios where matricula = k and pin = trim(p_pin) and ativo;
   if not found then
     perform ponto_falha(k);
-    return json_build_object('ok', false, 'erro', 'Matricula ou PIN invalidos.');
+    return json_build_object('ok', false, 'erro', 'Matricula ou senha invalidos.');
   end if;
   perform ponto_limpar_falhas(k);
   select * into c from ponto_config where id = 1;
@@ -130,7 +130,7 @@ begin
   select * into f from ponto_funcionarios where matricula = k and pin = trim(p_pin) and ativo;
   if not found then
     perform ponto_falha(k);
-    return json_build_object('ok', false, 'erro', 'Matricula ou PIN invalidos.');
+    return json_build_object('ok', false, 'erro', 'Matricula ou senha invalidos.');
   end if;
   v_dia := (now() at time zone 'America/Sao_Paulo')::date;
   return json_build_object('ok', true, 'nome', f.nome, 'dia', v_dia,
@@ -166,7 +166,7 @@ begin
   select * into f from ponto_funcionarios where matricula = k and pin = trim(p_pin) and ativo;
   if not found then
     perform ponto_falha(k);
-    return json_build_object('ok', false, 'erro', 'Matricula ou PIN invalidos.');
+    return json_build_object('ok', false, 'erro', 'Matricula ou senha invalidos.');
   end if;
   perform ponto_limpar_falhas(k);
   select * into c from ponto_config where id = 1;
@@ -204,7 +204,7 @@ begin
   select * into g from ponto_gestores where pin = trim(p_pin);
   if not found then
     perform ponto_falha('GESTOR');
-    return json_build_object('ok', false, 'erro', 'PIN de gestor invalido.');
+    return json_build_object('ok', false, 'erro', 'Senha de gestor invalida.');
   end if;
   perform ponto_limpar_falhas('GESTOR');
   return json_build_object('ok', true, 'nome', g.nome);
@@ -214,7 +214,7 @@ create or replace function ponto_admin_painel(p_pin text, p_data date)
 returns json language plpgsql security definer set search_path = public as $$
 begin
   if not ponto_gestor_ok(p_pin) then
-    return json_build_object('ok', false, 'erro', 'PIN de gestor invalido ou bloqueado temporariamente.');
+    return json_build_object('ok', false, 'erro', 'Senha de gestor invalida ou bloqueada temporariamente.');
   end if;
   return json_build_object('ok', true, 'dia', p_data,
     'funcionarios', coalesce((
@@ -241,7 +241,7 @@ returns json language plpgsql security definer set search_path = public as $$
 declare c record;
 begin
   if not ponto_gestor_ok(p_pin) then
-    return json_build_object('ok', false, 'erro', 'PIN de gestor invalido ou bloqueado temporariamente.');
+    return json_build_object('ok', false, 'erro', 'Senha de gestor invalida ou bloqueada temporariamente.');
   end if;
   select * into c from ponto_config where id = 1;
   if c.id is null then
@@ -256,7 +256,7 @@ create or replace function ponto_admin_set_cerca(p_pin text, p_lat float, p_lon 
 returns json language plpgsql security definer set search_path = public as $$
 begin
   if not ponto_gestor_ok(p_pin) then
-    return json_build_object('ok', false, 'erro', 'PIN de gestor invalido ou bloqueado temporariamente.');
+    return json_build_object('ok', false, 'erro', 'Senha de gestor invalida ou bloqueada temporariamente.');
   end if;
   if p_lat is null or p_lon is null
      or not (p_lat between -90 and 90) or not (p_lon between -180 and 180)
@@ -279,13 +279,13 @@ create or replace function ponto_admin_add_func(p_pin text, p_nome text, p_matri
 returns json language plpgsql security definer set search_path = public as $$
 begin
   if not ponto_gestor_ok(p_pin) then
-    return json_build_object('ok', false, 'erro', 'PIN de gestor invalido ou bloqueado temporariamente.');
+    return json_build_object('ok', false, 'erro', 'Senha de gestor invalida ou bloqueada temporariamente.');
   end if;
   if length(trim(coalesce(p_nome,''))) < 3 then
     return json_build_object('ok', false, 'erro', 'Informe o nome.');
   end if;
-  if p_pin_func is null or p_pin_func !~ '^\d{4,6}$' then
-    return json_build_object('ok', false, 'erro', 'PIN do funcionario: 4 a 6 numeros.');
+  if p_pin_func is null or length(p_pin_func) < 4 or length(p_pin_func) > 64 then
+    return json_build_object('ok', false, 'erro', 'Senha do funcionario: 4 a 64 caracteres.');
   end if;
   insert into ponto_funcionarios (nome, matricula, pin) values (trim(p_nome), upper(trim(p_matricula)), p_pin_func);
   return json_build_object('ok', true);
@@ -307,15 +307,15 @@ begin
   return json_build_object('ok', true);
 end $$;
 
--- Gestor redefine o PIN de um funcionario
+-- Gestor redefine a senha de um funcionario
 create or replace function ponto_admin_set_pin_func(p_pin text, p_matricula text, p_pin_novo text)
 returns json language plpgsql security definer set search_path = public as $$
 begin
   if not ponto_gestor_ok(p_pin) then
-    return json_build_object('ok', false, 'erro', 'PIN de gestor invalido ou bloqueado temporariamente.');
+    return json_build_object('ok', false, 'erro', 'Senha de gestor invalida ou bloqueada temporariamente.');
   end if;
-  if p_pin_novo is null or p_pin_novo !~ '^\d{4,6}$' then
-    return json_build_object('ok', false, 'erro', 'PIN do funcionario: 4 a 6 numeros.');
+  if p_pin_novo is null or length(p_pin_novo) < 4 or length(p_pin_novo) > 64 then
+    return json_build_object('ok', false, 'erro', 'Senha do funcionario: 4 a 64 caracteres.');
   end if;
   update ponto_funcionarios set pin = p_pin_novo where matricula = upper(trim(p_matricula));
   if not found then
@@ -355,9 +355,9 @@ values ('Gestor Piloto', 'SUBSTITUA-POR-SENHA-FORTE-MIN-12')
 on conflict do nothing;
 
 insert into ponto_funcionarios (nome, matricula, pin) values
-  ('Ana Exemplo',    'FIC-001', 'SUBSTITUA-PIN-4A6-DIGITOS'),
-  ('Bruno Teste',    'FIC-002', 'SUBSTITUA-PIN-4A6-DIGITOS'),
-  ('Carla Amostra',  'FIC-003', 'SUBSTITUA-PIN-4A6-DIGITOS'),
-  ('Diego Simulado', 'FIC-004', 'SUBSTITUA-PIN-4A6-DIGITOS'),
-  ('Elisa Ficticia', 'FIC-005', 'SUBSTITUA-PIN-4A6-DIGITOS')
+  ('Ana Exemplo',    'FIC-001', 'SUBSTITUA-SENHA-4A64'),
+  ('Bruno Teste',    'FIC-002', 'SUBSTITUA-SENHA-4A64'),
+  ('Carla Amostra',  'FIC-003', 'SUBSTITUA-SENHA-4A64'),
+  ('Diego Simulado', 'FIC-004', 'SUBSTITUA-SENHA-4A64'),
+  ('Elisa Ficticia', 'FIC-005', 'SUBSTITUA-SENHA-4A64')
 on conflict (matricula) do nothing;
