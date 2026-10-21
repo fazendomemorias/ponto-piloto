@@ -7,14 +7,14 @@ Dados 100% ficticios durante o piloto.
 
 ## O que foi entregue (implementado e testado)
 
-- Pagina do funcionario (`index.html`): login por matricula + PIN, botao
+- Pagina do funcionario (`index.html`): login por matricula + senha, botao
   "BATER PONTO" que so funciona DENTRO da cerca virtual configurada,
   alternancia automatica ENTRADA/SAIDA, horario gravado pelo SERVIDOR
   (nao pelo aparelho), lista das marcacoes do dia.
 - Pagina do gestor (`admin.html`): painel com presentes/entradas/saidas do
   dia, configuracao da cerca virtual (centro = GPS do gestor no local +
   raio em metros), cadastro de funcionario ficticio, troca da propria
-  senha de gestor e redefinicao de PIN de funcionario.
+  senha de gestor e redefinicao de senha de funcionario.
 - Banco (`setup.sql`): tabelas isoladas `ponto_*` dentro de um projeto
   Supabase existente, funcoes RPC como unica porta de entrada. Sem acesso
   direto as tabelas pelo navegador.
@@ -36,7 +36,7 @@ Dados 100% ficticios durante o piloto.
 - Validacao no servidor: coordenadas obrigatorias, finitas e dentro da
   faixa (lat -90..90, lon -180..180) tanto no registro quanto na cerca.
 - Painel do gestor protegido por senha forte (minimo 12 caracteres);
-  PINs de funcionario de 4 a 6 digitos. Nenhum valor de senha/PIN
+  senhas de funcionario de 4 a 64 caracteres. Nenhum valor de senha/PIN
   consta em codigo, mensagens ou na VERSAO ATUAL do repositorio
   (o historico antigo do git contem PINs ja invalidados que nao abrem
   mais nada; a rotacao foi feita exatamente por isso).
@@ -65,7 +65,7 @@ Dados 100% ficticios durante o piloto.
 ## Como subir do zero (pacote executavel)
 
 1. No final do `setup.sql`, ANTES de rodar, substitua os placeholders
-   `SUBSTITUA-POR-SENHA-FORTE-MIN-12` e `SUBSTITUA-PIN-4A6-DIGITOS`
+   `SUBSTITUA-POR-SENHA-FORTE-MIN-12` e `SUBSTITUA-SENHA-4A64`
    localmente (nunca commite valores).
 2. Crie um projeto Supabase gratuito e rode o `setup.sql` completo no
    SQL Editor. Ele cria tabelas, RLS, funcoes, revogacoes e grants.
@@ -96,7 +96,7 @@ servidor proprio. Requisitos:
    conceda apenas ao papel anon - usuarios autenticados de outro sistema
    no mesmo projeto nao podem chamar nada.
 
-3. FUNCIONARIO: login por matricula + PIN; botao "bater ponto" que pede
+3. FUNCIONARIO: login por matricula + senha; botao "bater ponto" que pede
    a geolocalizacao do navegador e so grava se a distancia (haversine
    calculada no servidor) for menor que o raio configurado. ENTRADA/SAIDA
    alternam automaticamente conforme o dia. O horario gravado e o do
@@ -110,7 +110,7 @@ servidor proprio. Requisitos:
 5. GESTOR: painel com senha forte (min. 12 caracteres) mostrando
    presentes/entradas/saidas por dia, definicao da cerca (centro = GPS
    atual do gestor, raio 30-2000m, rotulo), cadastro de funcionario,
-   troca da propria senha e redefinicao de PIN de funcionario. Updates
+   troca da propria senha e redefinicao de senha de funcionario. Updates
    sempre com WHERE (o Supabase bloqueia update de tabela inteira).
 
 6. ANTI-FORCA-BRUTA: tabela de tentativas; 5 erros em 10 minutos por
@@ -130,7 +130,8 @@ servidor proprio. Requisitos:
    Restringir grants ao papel anon impede que tokens autenticados do
    outro sistema chamem as funcoes - mas a chave anon e publica por
    desenho, entao a protecao real vem das credenciais proprias
-   (PIN/senha) exigidas dentro de cada RPC, mais o bloqueio por
+   (senha do gestor ou senha de funcionario) exigidas dentro de cada
+   RPC, mais o bloqueio por
    tentativas. Verifique com chamadas anonimas e com a auditoria de
    information_schema.routine_privileges.
 
