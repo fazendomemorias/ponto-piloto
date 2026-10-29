@@ -1,0 +1,25 @@
+<!doctype html><html lang="pt-BR"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Painel do ponto | Secretaria de Saúde de Exu</title><style>*{box-sizing:border-box}body{font:16px system-ui,sans-serif;background:#f1f5f9;color:#172033;margin:0;padding:22px}main{max-width:760px;margin:auto}section{background:white;border:1px solid #d7dee8;border-radius:14px;padding:22px;margin:18px 0}h1{font-size:28px;line-height:1.2}h2{font-size:20px}p{line-height:1.55}label{display:block;margin:12px 0}input,button{font:inherit;border:1px solid #9aa8ba;border-radius:8px;padding:12px}input{width:100%;max-width:360px}button{background:#174e77;color:#fff;cursor:pointer;margin:8px 8px 8px 0}button:disabled{opacity:.5;cursor:wait}#msg{white-space:pre-wrap;line-height:1.55}.row{padding:14px 0;border-top:1px solid #e2e8f0}.muted{color:#536174;font-size:14px}.bad{color:#9f1239}.good{color:#166534}</style><main><h1>Painel do ponto</h1><p class="muted">Consulta real das batidas coletadas do relógio Control iD da Secretaria. Mostra a última comunicação do coletor e a última batida registrada de cada pessoa autorizada. Uma batida é uma marcação registrada no relógio: não prova presença contínua nem entrada ou saída.</p><section><h2>1. Acesso do gestor</h2><label for="senha">Senha do gestor (a mesma da tela de cadastro)</label><input id="senha" type="password" autocomplete="off"><p class="muted">Usada só nesta consulta. Não fica salva no navegador.</p><button id="consultar">Consultar</button><p id="msg" role="status">Nenhuma consulta feita ainda.</p></section><section><h2>Coletor</h2><div id="coletor">Consulte para ver.</div><p class="muted">Mostra a última comunicação confirmada do coletor que roda no notebook. Não informa se o notebook está ligado agora.</p></section><section><h2>Pessoas autorizadas</h2><div id="pessoas">Consulte para ver.</div><p class="muted">Horário conferido no arquivo lido do relógio, com CRC local validado; a integridade do firmware não é certificada.</p></section></main><script>
+const $=id=>document.getElementById(id);
+const BASE='https://hxyrjkgnmcmeyevmflol.supabase.co';const KEY='sb_publishable_l8KDaRaRSU46w4yxxWF_9w_RXmoML0P';
+function fmt(iso){if(!iso)return null;const d=new Date(iso);return d.toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})}
+async function consultar(){
+ $('consultar').disabled=true;
+ try{
+  const senha=$('senha').value;if(!senha)throw Error('Digite a senha do gestor.');
+  const r=await fetch(BASE+'/rest/v1/rpc/ponto_prod_status',{method:'POST',headers:{apikey:KEY,'Content-Type':'application/json'},body:JSON.stringify({p_senha:senha})});
+  if(!r.ok)throw Error('Não foi possível consultar agora.');
+  const j=await r.json();if(!j.ok)throw Error(j.erro==='ACESSO'?'Senha não confirmada.':'Operação não confirmada.');
+  $('msg').innerHTML='<span class="good">Consulta confirmada às '+fmt(new Date().toISOString())+'.</span>';
+  const c=j.coletor;
+  if(c&&c.ultima_comunicacao){
+   let t='Última comunicação confirmada: <strong>'+fmt(c.ultima_comunicacao)+'</strong>.';
+   if(c.sem_comunicacao_min!=null&&c.sem_comunicacao_min>=10)t+=' <span class="bad">Sem comunicação há '+c.sem_comunicacao_min+' min. As batidas aparecem aqui só quando o notebook está ligado e coletando.</span>';
+   $('coletor').innerHTML='<div class="row">'+t+'</div>';
+  }else{$('coletor').innerHTML='<div class="row">O coletor ainda não comunicou nenhuma leitura.</div>'}
+  const ps=j.pessoas||[];
+  $('pessoas').innerHTML=ps.length?ps.map(p=>'<div class="row"><strong>'+p.nome+'</strong> (matrícula '+p.matricula+')<br><span class="muted">Última batida registrada: '+(fmt(p.ultima_batida)||'nenhuma batida coletada ainda')+'</span></div>').join(''):'Nenhuma pessoa autorizada no momento.';
+ }catch(e){$('msg').innerHTML='<span class="bad">'+(e.message||'Falha na consulta.')+'</span>'}
+ finally{$('consultar').disabled=false}
+}
+$('consultar').onclick=consultar;
+</script>
