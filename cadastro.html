@@ -4,8 +4,8 @@
 </style></head><body>
 <main>
 <div class="brand"><span class="mark" aria-hidden="true">◷</span><div>Ponto<small>Sistema próprio · Exu</small></div></div>
-<header class="topbar"><span>Área do gestor / Cadastro de pessoas</span><span class="pill">Ligado ao relógio pelo notebook</span></header>
-<div class="notice"><strong>Atenção:</strong> incluir uma pessoa no relógio grava um <strong>registro permanente</strong> no histórico do aparelho, mesmo que o cadastro seja excluído depois. A digital de cada pessoa é cadastrada <strong>presencialmente</strong> no relógio. O envio acontece pelo notebook ligado na rede da Secretaria; se ele estiver desligado, o cadastro fica na fila.</div>
+<header class="topbar"><span>Área do gestor / Cadastro de pessoas</span><span class="pill neutral">Envio ao relógio ainda não ativado</span></header>
+<div class="notice"><strong>Como funciona nesta etapa:</strong> o cadastro fica guardado na fila do sistema, com o PIS protegido. O <strong>envio ao relógio ainda não está ativado</strong>. Quando for ativado, ele acontecerá pelo notebook ligado na rede da Secretaria e cada inclusão gravará um <strong>registro permanente</strong> no histórico do aparelho, mesmo que o cadastro seja excluído depois. A digital de cada pessoa será cadastrada <strong>presencialmente</strong> no relógio.</div>
 
 <section class="card" id="card-senha">
 <h2>1. Acesso do gestor</h2>
@@ -58,6 +58,6 @@ if(!/^\d{11}$/.test(pis)){$('msg-novo').textContent='O PIS precisa ter exatament
 if(mat&&!/^\d{1,18}$/.test(mat)){$('msg-novo').textContent='Matrícula: somente números ou deixe em branco.';$('msg-novo').className='bad';return}
 if(!$('ciencia').checked){$('msg-novo').textContent='Confirme a conferência dos dados e o registro permanente.';$('msg-novo').className='bad';return}
 $('enviar').disabled=true;$('msg-novo').textContent='';
-try{await rpc('ponto_cad_enviar',{p_senha:senha,p_nome:nome,p_pis:pis,p_matricula:mat,p_ambiente:'REAL'});$('msg-novo').textContent='Cadastro na fila. O envio ao relógio acontece pelo notebook ligado.';$('msg-novo').className='good';$('nome').value='';$('pis').value='';$('matricula').value='';$('ciencia').checked=false;await carregar()}catch(e){$('msg-novo').textContent=e.message;$('msg-novo').className='bad'}finally{$('enviar').disabled=false}};
+try{await rpc('ponto_cad_enviar',{p_senha:senha,p_nome:nome,p_pis:pis,p_matricula:mat,p_ambiente:'REAL'});$('msg-novo').textContent='Cadastro guardado na fila. O envio ao relógio será ativado na próxima etapa.';$('msg-novo').className='good';$('nome').value='';$('pis').value='';$('matricula').value='';$('ciencia').checked=false;await carregar()}catch(e){$('msg-novo').textContent=e.message;$('msg-novo').className='bad'}finally{$('enviar').disabled=false}};
 $('atualizar').onclick=carregar;
 </script></body></html>
