@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex,nofollow"><meta name="description" content="Cadastro de pessoas para envio ao relógio de ponto. Área protegida do gestor."><title>Ponto | Cadastro de pessoas</title><style>
+:root{--ink:#202d39;--muted:#607181;--line:#dde5eb;--bg:#f4f7f9;--teal:#156963;--light:#e9f5f2;--nav:#142f3a}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif}button,input{font:inherit}main{max-width:860px;margin:0 auto;padding:26px 20px 40px}.brand{display:flex;align-items:center;gap:12px;font-size:22px;font-weight:700;letter-spacing:-.6px;margin-bottom:4px}.mark{border:2px solid #91c9b9;display:grid;place-items:center;border-radius:10px;width:38px;height:38px;color:var(--teal);font-size:21px;background:#fff}.brand small{display:block;font-size:11px;font-weight:400;letter-spacing:1.4px;color:var(--muted);text-transform:uppercase}.topbar{display:flex;align-items:center;justify-content:space-between;gap:14px;border-bottom:1px solid var(--line);padding-bottom:14px;color:var(--muted);font-size:13px;margin-bottom:22px;flex-wrap:wrap}.pill{display:inline-flex;align-items:center;gap:7px;background:var(--light);color:var(--teal);border-radius:30px;padding:5px 10px;font-size:11px;font-weight:650}.pill.neutral{background:#edf1f4;color:#536575}.pill.warn{background:#fff6e7;color:#8a6414}.pill.err{background:#fee2e2;color:#991b1b}.pill.off{background:#edf1f4;color:#536575}.card{background:white;border:1px solid var(--line);border-radius:10px;padding:22px;margin-bottom:20px}h1{font-size:25px;line-height:1.25;letter-spacing:-.6px;margin:0 0 8px;font-weight:650}h2{font-size:17px;margin:0 0 12px;letter-spacing:-.25px}p{margin:0 0 12px}.muted{color:var(--muted)}.sub{color:var(--muted);font-size:14px}.notice{background:#fff6e7;border:1px solid #eedab7;border-radius:8px;padding:12px 16px;font-size:13px;color:#695124;margin-bottom:20px}label{display:block;font-size:12px;color:var(--muted);font-weight:600;margin:14px 0 6px}input{width:100%;max-width:420px;min-height:46px;border:1px solid #bccbd5;border-radius:6px;background:white;padding:10px 12px;color:var(--ink)}input:focus-visible,button:focus-visible{outline:3px solid #da9d3b;outline-offset:2px}.button{display:inline-flex;min-height:44px;align-items:center;justify-content:center;padding:10px 16px;border:1px solid var(--line);border-radius:6px;background:white;color:var(--ink);font-size:13px;font-weight:600;cursor:pointer;margin-top:16px}.button.primary{background:var(--teal);border-color:var(--teal);color:white}.button.primary:hover{background:#0f524e}.button:disabled{opacity:.55;cursor:wait}.row{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 0;border-top:1px solid var(--line);flex-wrap:wrap}.row:first-of-type{border-top:0}.row small{display:block;font-size:12px;color:var(--muted);margin-top:2px}.mini{min-height:36px;padding:6px 12px;margin-top:0;font-size:12px}.check{display:flex;gap:10px;align-items:flex-start;margin-top:16px;font-size:13px}.check input{width:auto;min-height:auto;margin-top:3px}#msg{font-size:13px;margin-top:12px;min-height:20px}.bad{color:#9f1239}.good{color:#166534}.foot{border-top:1px solid var(--line);margin-top:26px;padding-top:16px;font-size:12px;color:var(--muted)}.hidden{display:none!important}
+</style></head><body>
+<main>
+<div class="brand"><span class="mark" aria-hidden="true">◷</span><div>Ponto<small>Sistema próprio · Exu</small></div></div>
+<header class="topbar"><span>Área do gestor / Cadastro de pessoas</span><span class="pill">Ligado ao relógio pelo notebook</span></header>
+<div class="notice"><strong>Atenção:</strong> incluir uma pessoa no relógio grava um <strong>registro permanente</strong> no histórico do aparelho, mesmo que o cadastro seja excluído depois. A digital de cada pessoa é cadastrada <strong>presencialmente</strong> no relógio. O envio acontece pelo notebook ligado na rede da Secretaria; se ele estiver desligado, o cadastro fica na fila.</div>
+
+<section class="card" id="card-senha">
+<h2>1. Acesso do gestor</h2>
+<p class="sub">Digite a senha de gestor do cadastro. Ela não fica salva no navegador e não deve ser enviada por mensagem.</p>
+<label for="senha">Senha do gestor</label>
+<input id="senha" type="password" autocomplete="off">
+<button class="button primary" id="entrar">Entrar</button>
+<p id="msg-login" role="status"></p>
+</section>
+
+<section class="card hidden" id="card-novo">
+<h2>2. Nova pessoa</h2>
+<label for="nome">Nome completo</label>
+<input id="nome" type="text" autocomplete="off" maxlength="100">
+<label for="pis">PIS (11 dígitos, somente números)</label>
+<input id="pis" type="text" inputmode="numeric" autocomplete="off" maxlength="11" placeholder="Ex.: 10712345678">
+<label for="matricula">Matrícula (opcional, somente números)</label>
+<input id="matricula" type="text" inputmode="numeric" autocomplete="off" maxlength="18">
+<label class="check"><input id="ciencia" type="checkbox"><span>Conferi o nome e o PIS e entendo que a inclusão no relógio deixa <strong>registro permanente</strong> no histórico do aparelho.</span></label>
+<button class="button primary" id="enviar">Enviar para a fila do relógio</button>
+<p id="msg-novo" role="status"></p>
+</section>
+
+<section class="card hidden" id="card-fila">
+<h2>3. Fila e situação</h2>
+<p class="sub">Situação de cada cadastro em relação ao relógio.</p>
+<div id="lista"><p class="muted">Carregue para ver a fila.</p></div>
+<button class="button" id="atualizar">Atualizar situação</button>
+<p id="msg-fila" role="status"></p>
+</section>
+
+<footer class="foot"><span>Ponto · Cadastro de pessoas · sistema próprio</span><span><a href="gestao.html" style="color:var(--teal)">Prévia de gestão</a> · <a href="teste-real.html" style="color:var(--teal)">Consulta do piloto</a></span></footer>
+</main>
+<script>
+'use strict';
+const BASE='https://hxyrjkgnmcmeyevmflol.supabase.co';const KEY='sb_publishable_l8KDaRaRSU46w4yxxWF_9w_RXmoML0P';
+const $=id=>document.getElementById(id);const esc=x=>String(x).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt=d=>d?new Date(d).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'}):'';
+let senha='';
+async function rpc(fn,body){const r=await fetch(BASE+'/rest/v1/rpc/'+fn,{method:'POST',headers:{apikey:KEY,'Content-Type':'application/json'},body:JSON.stringify(body)});if(!r.ok)throw Error('Não foi possível falar com o sistema agora.');const j=await r.json();if(!j.ok)throw Error(j.erro||'Operação não confirmada.');return j}
+const ST={PENDENTE:['Na fila','warn'],EM_ENVIO:['Enviando ao relógio','warn'],ENVIADO:['Cadastrada no relógio',''],ERRO:['Erro no envio','err'],CANCELADO:['Cancelado','off']};
+async function carregar(){$('msg-fila').textContent='';try{const j=await rpc('ponto_cad_listar',{p_senha:senha});const cs=j.cadastros;
+$('lista').innerHTML=cs.length?cs.map(c=>{const st=ST[c.status]||[c.status,'off'];return '<div class="row"><div><strong>'+esc(c.nome)+'</strong> <span class="pill '+st[1]+'">'+esc(st[0])+'</span>'+(c.ambiente==='TESTE'?' <span class="pill off">demonstração</span>':'')+'<small>PIS '+esc(c.pis)+(c.matricula?' · matrícula '+esc(c.matricula):'')+' · incluído em '+esc(fmt(c.criado_em))+(c.enviado_em?' · enviado em '+esc(fmt(c.enviado_em)):'')+(c.erro?'<br><span class="bad">'+esc(c.erro)+'</span>':'')+'</small></div>'+(c.status==='PENDENTE'?'<button class="button mini" data-cancel="'+c.id+'">Cancelar</button>':'')+'</div>'}).join(''):'<p class="muted">Nenhum cadastro na fila ainda.</p>';
+document.querySelectorAll('[data-cancel]').forEach(b=>b.onclick=async()=>{b.disabled=true;try{await rpc('ponto_cad_cancelar',{p_senha:senha,p_id:Number(b.dataset.cancel)});await carregar()}catch(e){$('msg-fila').textContent=e.message;$('msg-fila').className='bad';b.disabled=false}})}catch(e){$('msg-fila').textContent=e.message;$('msg-fila').className='bad'}}
+$('entrar').onclick=async()=>{senha=$('senha').value;if(!senha){$('msg-login').textContent='Digite a senha do gestor.';$('msg-login').className='bad';return}$('entrar').disabled=true;$('msg-login').textContent='';
+try{await rpc('ponto_cad_listar',{p_senha:senha});$('card-novo').classList.remove('hidden');$('card-fila').classList.remove('hidden');$('msg-login').textContent='Acesso liberado nesta visita.';$('msg-login').className='good';$('senha').value='';await carregar()}catch(e){senha='';$('msg-login').textContent=e.message;$('msg-login').className='bad'}finally{$('entrar').disabled=false}};
+$('enviar').onclick=async()=>{const nome=$('nome').value.trim(),pis=$('pis').value.replace(/\D/g,''),mat=$('matricula').value.replace(/\D/g,'');
+if(nome.length<3){$('msg-novo').textContent='Informe o nome completo.';$('msg-novo').className='bad';return}
+if(!/^\d{11}$/.test(pis)){$('msg-novo').textContent='O PIS precisa ter exatamente 11 dígitos.';$('msg-novo').className='bad';return}
+if(mat&&!/^\d{1,18}$/.test(mat)){$('msg-novo').textContent='Matrícula: somente números ou deixe em branco.';$('msg-novo').className='bad';return}
+if(!$('ciencia').checked){$('msg-novo').textContent='Confirme a conferência dos dados e o registro permanente.';$('msg-novo').className='bad';return}
+$('enviar').disabled=true;$('msg-novo').textContent='';
+try{await rpc('ponto_cad_enviar',{p_senha:senha,p_nome:nome,p_pis:pis,p_matricula:mat,p_ambiente:'REAL'});$('msg-novo').textContent='Cadastro na fila. O envio ao relógio acontece pelo notebook ligado.';$('msg-novo').className='good';$('nome').value='';$('pis').value='';$('matricula').value='';$('ciencia').checked=false;await carregar()}catch(e){$('msg-novo').textContent=e.message;$('msg-novo').className='bad'}finally{$('enviar').disabled=false}};
+$('atualizar').onclick=carregar;
+</script></body></html>
